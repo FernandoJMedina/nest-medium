@@ -1,25 +1,46 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from 'src/entities/user.entity';
+import { Repository } from 'typeorm';
 import { LoginDTO, RegisterDTO } from './models/user.dto';
 
 @Injectable()
 export class AuthService {
-  private mockUser = {
-    email: 'jake@jake.com',
-    token: 'jwt.token.here',
-    username: 'jake',
-    bio: 'Im dev',
-    image: null,
-  };
+  constructor(
+    @InjectRepository(UserEntity) private userRepo: Repository<UserEntity>,
+  ) {}
 
-  register(credentials: RegisterDTO) {
-    return this.mockUser;
+  async register(credentials: RegisterDTO) {
+    try {
+      const user = this.userRepo.create(credentials);
+      await user.save();
+      return user;
+    } catch (error) {
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new ConflictException('Username or email has already been taken');
+      }
+      throw new InternalServerErrorException();
+    }
   }
 
-  login(credentials: LoginDTO) {
-    if (credentials.email === this.mockUser.email) {
-      return this.mockUser;
+  async login(credentials: LoginDTO) {
+    const { email, password } = credentials;
+    let user: UserEntity;
+    try {
+      user = await this.userRepo.findOne({ where: { email } });
+    } catch (error) {
+      throw new InternalServerErrorException();
     }
 
-    throw new InternalServerErrorException();
+    if (user && (await user.comparePassword(password))) {
+      return user;
+    }
+    throw new UnauthorizedException();
   }
 }
