@@ -10,4 +10,7 @@ export default () => ({
     entities: ['dist/**/*.entity{.ts,.js}'],
     synchronize: true,
   },
+  jwt: {
+    secret: process.env.SECRET_KEY,
+  },
 });

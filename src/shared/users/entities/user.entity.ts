@@ -1,6 +1,6 @@
 import { classToPlain, Exclude } from 'class-transformer';
 import { BeforeInsert, Column, Entity } from 'typeorm';
-import { AbstractEntity } from './abstract-entity';
+import { AbstractEntity } from '../../entities/abstract-entity';
 import * as bcrypt from 'bcrypt';
 
 @Entity('users')
@@ -28,7 +28,6 @@ export class UserEntity extends AbstractEntity {
   }
 
   async comparePassword(attempt: string) {
-    console.log(await bcrypt.compare(attempt, this.password));
     return await bcrypt.compare(attempt, this.password);
   }
 
