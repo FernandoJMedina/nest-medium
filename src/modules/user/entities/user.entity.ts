@@ -1,6 +1,6 @@
 import { classToPlain, Exclude } from 'class-transformer';
-import { BeforeInsert, Column, Entity } from 'typeorm';
-import { AbstractEntity } from '../../entities/abstract-entity';
+import { BeforeInsert, Column, Entity, JoinTable, ManyToMany } from 'typeorm';
+import { AbstractEntity } from '../../../shared/entities/abstract-entity';
 import * as bcrypt from 'bcrypt';
 
 @Entity('users')
@@ -20,7 +20,13 @@ export class UserEntity extends AbstractEntity {
   @Column()
   @Exclude()
   password: string;
-  //TODO: add following
+
+  @ManyToMany((type) => UserEntity, (user) => user.followee)
+  @JoinTable()
+  followers: UserEntity[];
+
+  @ManyToMany((type) => UserEntity, (user) => user.followers)
+  followee: UserEntity[];
 
   @BeforeInsert()
   async hashPassword() {
@@ -33,5 +39,12 @@ export class UserEntity extends AbstractEntity {
 
   toJSON() {
     return classToPlain(this);
+  }
+
+  toProfile(user: UserEntity) {
+    const following = this.followers.includes(user);
+    const profile = this.toJSON();
+    delete profile['followers'];
+    return { ...profile, following };
   }
 }

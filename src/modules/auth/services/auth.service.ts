@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from 'src/shared/users/entities/user.entity';
+import { UserEntity } from 'src/modules/user/entities/user.entity';
 import { Repository } from 'typeorm';
-import { LoginDTO, RegisterDTO } from '../../shared/users/models/user.model';
+import { LoginDTO, RegisterDTO } from '../dto/auth.dto';
 
 @Injectable()
 export class AuthService {
